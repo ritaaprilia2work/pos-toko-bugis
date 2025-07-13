@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Product } from '../types';
 import { Plus, Search, Edit2, Trash2, AlertTriangle } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const Products: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, isLoading } = useData();
+  const { products, addProduct, updateProduct, deleteProduct } = useData();
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState('');
@@ -19,7 +18,7 @@ const Products: React.FC = () => {
 
   const lowStockProducts = products.filter(product => product.stock <= product.min_stock);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
@@ -33,16 +32,12 @@ const Products: React.FC = () => {
       min_stock: Number(formData.get('min_stock')),
     };
 
-    try {
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, productData);
-      } else {
-        await addProduct(productData);
-      }
-      setShowModal(false);
-      setEditingProduct(null);
-    } catch (error) {
-      // Error is already handled in DataContext
+    if (editingProduct) {
+      updateProduct(editingProduct.id, productData);
+      toast.success('Produk berhasil diperbarui');
+    } else {
+      addProduct(productData);
+      toast.success('Produk berhasil ditambahkan');
     }
 
     setShowModal(false);
@@ -54,26 +49,12 @@ const Products: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (product: Product) => {
+  const handleDelete = (product: Product) => {
     if (window.confirm(`Yakin ingin menghapus produk "${product.name}"?`)) {
-      try {
-        await deleteProduct(product.id);
-      } catch (error) {
-        // Error is already handled in DataContext
-      }
+      deleteProduct(product.id);
+      toast.success('Produk berhasil dihapus');
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="mx-auto mb-4" />
-          <p className="text-gray-600">Memuat produk...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>

@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { TrendingUp, TrendingDown, Package, Plus } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
 const Stock: React.FC = () => {
-  const { products, stockLogs, updateStock, isLoading } = useData();
+  const { products, stockLogs, updateStock } = useData();
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState('');
   const [stockType, setStockType] = useState<'IN' | 'OUT'>('IN');
   const [quantity, setQuantity] = useState(0);
   const [source, setSource] = useState('');
 
-  const handleStockUpdate = async (e: React.FormEvent) => {
+  const handleStockUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedProduct || quantity <= 0 || !source) {
@@ -22,28 +21,16 @@ const Stock: React.FC = () => {
       return;
     }
 
-    try {
-      await updateStock(selectedProduct, quantity, stockType, source);
-      
-      setShowModal(false);
-      setSelectedProduct('');
-      setQuantity(0);
-      setSource('');
-    } catch (error) {
-      // Error is already handled in DataContext
-    }
+    updateStock(selectedProduct, quantity, stockType, source);
+    
+    const action = stockType === 'IN' ? 'ditambah' : 'dikurangi';
+    toast.success(`Stok berhasil ${action}`);
+    
+    setShowModal(false);
+    setSelectedProduct('');
+    setQuantity(0);
+    setSource('');
   };
-
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="mx-auto mb-4" />
-          <p className="text-gray-600">Memuat data stok...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>

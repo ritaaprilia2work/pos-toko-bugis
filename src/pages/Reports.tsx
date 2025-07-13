@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, DollarSign, Package, ShoppingCart } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
 
 const Reports: React.FC = () => {
-  const { transactions, products, isLoading } = useData();
+  const { transactions, products } = useData();
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month'>('today');
 
   const getDateRange = () => {
@@ -96,17 +95,6 @@ const Reports: React.FC = () => {
   }));
 
   const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'];
-
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="mx-auto mb-4" />
-          <p className="text-gray-600">Memuat laporan...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div>

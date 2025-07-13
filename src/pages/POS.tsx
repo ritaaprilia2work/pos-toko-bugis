@@ -3,11 +3,10 @@ import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { CartItem, Product } from '../types';
 import { ShoppingCart, Search, Plus, Minus, Trash2, CreditCard, Banknote } from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const POS: React.FC = () => {
-  const { products, addTransaction, isLoading } = useData();
+  const { products, addTransaction } = useData();
   const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
@@ -71,7 +70,7 @@ const POS: React.FC = () => {
     setCart(prev => prev.filter(item => item.product.id !== productId));
   };
 
-  const processTransaction = async () => {
+  const processTransaction = () => {
     if (cart.length === 0) {
       toast.error('Keranjang kosong');
       return;
@@ -92,34 +91,20 @@ const POS: React.FC = () => {
       total_price: item.total
     }));
 
-    try {
-      await addTransaction({
-        total,
-        payment_method: paymentMethod,
-        cashier_id: user.id,
-        cashier_name: user.name,
-        note: discount > 0 ? `Diskon: ${discount}%` : undefined,
-        items: transactionItems
-      });
+    addTransaction({
+      total,
+      payment_method: paymentMethod,
+      cashier_id: user.id,
+      cashier_name: user.name,
+      note: discount > 0 ? `Diskon: ${discount}%` : undefined,
+      items: transactionItems
+    });
 
-      // Clear cart and reset form
-      setCart([]);
-      setDiscount(0);
-    } catch (error) {
-      // Error is already handled in DataContext
-    }
+    // Clear cart and reset form
+    setCart([]);
+    setDiscount(0);
+    toast.success('Transaksi berhasil!');
   };
-
-  if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" className="mx-auto mb-4" />
-          <p className="text-gray-600">Memuat data...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full">
