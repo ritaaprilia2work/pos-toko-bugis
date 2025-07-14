@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 const POS: React.FC = () => {
   const { products, addTransaction } = useData();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -70,40 +70,44 @@ const POS: React.FC = () => {
     setCart(prev => prev.filter(item => item.product.id !== productId));
   };
 
-  const processTransaction = () => {
+  const processTransaction = async () => {
     if (cart.length === 0) {
       toast.error('Keranjang kosong');
       return;
     }
 
-    if (!user) {
+    if (!user || !userProfile) {
       toast.error('User tidak ditemukan');
       return;
     }
 
-    const transactionItems = cart.map(item => ({
-      id: '',
-      transaction_id: '',
-      product_id: item.product.id,
-      product_name: item.product.name,
-      quantity: item.quantity,
-      unit_price: item.product.sell_price,
-      total_price: item.total
-    }));
+    try {
+      const transactionItems = cart.map(item => ({
+        id: '',
+        transaction_id: '',
+        product_id: item.product.id,
+        product_name: item.product.name,
+        quantity: item.quantity,
+        unit_price: item.product.sell_price,
+        total_price: item.total
+      }));
 
-    addTransaction({
-      total,
-      payment_method: paymentMethod,
-      cashier_id: user.id,
-      cashier_name: user.name,
-      note: discount > 0 ? `Diskon: ${discount}%` : undefined,
-      items: transactionItems
-    });
+      await addTransaction({
+        total,
+        payment_method: paymentMethod,
+        cashier_id: user.id,
+        cashier_name: userProfile.name,
+        note: discount > 0 ? `Diskon: ${discount}%` : undefined,
+        items: transactionItems
+      });
 
-    // Clear cart and reset form
-    setCart([]);
-    setDiscount(0);
-    toast.success('Transaksi berhasil!');
+      // Clear cart and reset form
+      setCart([]);
+      setDiscount(0);
+      toast.success('Transaksi berhasil!');
+    } catch (error) {
+      toast.error('Gagal memproses transaksi');
+    }
   };
 
   return (
@@ -111,7 +115,7 @@ const POS: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Kasir</h1>
         <div className="text-sm text-gray-600">
-          Kasir: <span className="font-medium">{user?.name}</span>
+          Kasir: <span className="font-medium">{userProfile?.name}</span>
         </div>
       </div>
 

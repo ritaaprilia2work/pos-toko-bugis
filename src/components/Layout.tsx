@@ -5,7 +5,6 @@ import {
   ShoppingCart, 
   Package, 
   BarChart3, 
-  Settings, 
   LogOut, 
   Store,
   Warehouse,
@@ -17,12 +16,12 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { userProfile, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/login');
   };
 
@@ -35,7 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   const filteredNavigation = navigation.filter(item => 
-    item.roles.includes(user?.role || '')
+    item.roles.includes(userProfile?.role || '')
   );
 
   return (
@@ -76,8 +75,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="bg-slate-800 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-white">{user?.name}</p>
-                  <p className="text-xs text-gray-400 capitalize">{user?.role}</p>
+                  <p className="text-sm font-medium text-white">{userProfile?.name}</p>
+                  <p className="text-xs text-gray-400 capitalize">{userProfile?.role}</p>
                 </div>
                 <button
                   onClick={handleLogout}
